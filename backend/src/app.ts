@@ -35,12 +35,15 @@ app.use("/api/admin", adminRoutes);
 
 app.use(cookieParser());
 
+app.use("/api/users", userRoutes);
+app.use("/api/videos", videoRoutes);
+app.use("/api/interview", interviewRoutes);
+
 app.use(authMiddleware);
 
 app.use("/api", questionPackageRoutes);
-app.use("/api/interview", interviewRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/videos", videoRoutes);
+
+
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World from app.ts!");
