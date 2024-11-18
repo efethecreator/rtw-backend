@@ -9,12 +9,18 @@ class AdminController {
       const token = await authenticateAdmin(email, password);
 
       if (token) {
-        // Token'ı HTTP Header olarak gönderiyoruz
-        res.setHeader('Authorization', `Bearer ${token}`);
+        // Token'ı cookie olarak ekliyoruz
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none',
+          maxAge: 60 * 60 * 1000, // 1 saat geçerli
+        });
+
         res.status(200).json({ message: 'Giriş başarılı!' });
         return;
       }
-      res.status(401).json({ message: 'Geçersiz email veya şifre!' });  
+      res.status(401).json({ message: 'Geçersiz email veya şifre!' });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Bir hata oluştu!' });
@@ -23,8 +29,13 @@ class AdminController {
 
   static logoutAdmin = (req: Request, res: Response): void => {
     try {
-      // Token'ı silmek için client'a talimat veriyoruz
-      res.setHeader('Authorization', '');
+      // Cookie'yi temizliyoruz
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+      });
+
       res.status(200).json({ message: 'Başarıyla çıkış yapıldı.' });
     } catch (error) {
       console.error(error);

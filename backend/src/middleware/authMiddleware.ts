@@ -13,8 +13,8 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  // Token'ı Authorization header'dan alıyoruz
-  const token = req.header('Authorization')?.split(' ')[1]; // Bearer <token> formatı
+  // Token'ı cookie'den alıyoruz
+  const token = req.cookies.token;
 
   if (!token) {
     res.status(401).json({ message: "No token provided" });
@@ -38,7 +38,6 @@ const authMiddleware = (
   } catch (error) {
     console.error("Authentication error:", error);
     res.status(401).json({ message: "Invalid or expired token" });
-    return;
   }
 };
 
