@@ -4,9 +4,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Request arayüzünü genişletiyoruz
 interface AuthenticatedRequest extends Request {
-  user?: JwtPayload; // 'user' özelliği ekliyoruz
+  user?: JwtPayload;
 }
 
 const authMiddleware = (
@@ -14,38 +13,30 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  
-  // Cookie'den token'ı alıyoruz
-  const token = req.cookies.token;
+  // Token'ı Authorization header'dan alıyoruz
+  const token = req.header('Authorization')?.split(' ')[1]; // Bearer <token> formatı
 
   if (!token) {
     res.status(401).json({ message: "No token provided" });
     return;
   }
-  
 
   try {
-    
-    // Token doğrulama
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
     ) as JwtPayload;
 
-    // E-posta ortam değişkeni ile eşleşiyor mu?
+    // Token'da yer alan email doğrulaması
     if (decoded.email === process.env.MASTER_ADMIN_EMAIL) {
-      req.user = decoded; // Doğrulama başarılıysa kullanıcıyı isteğe ekliyoruz
-      next(); // Middleware geçişi, kullanıcı doğrulandı
+      req.user = decoded;
+      next();
     } else {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Authentication error:", error.message); // Hata mesajını loglayın
-    } else {
-      console.error("Non-standard error type:", error);
-    }
+    console.error("Authentication error:", error);
     res.status(401).json({ message: "Invalid or expired token" });
     return;
   }
